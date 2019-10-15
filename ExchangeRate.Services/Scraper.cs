@@ -1,4 +1,5 @@
-﻿using ExchangeRate.EF;
+﻿using ExchangeRate.Common;
+using ExchangeRate.EF;
 using ExchangeRate.EF.Models;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -17,23 +18,24 @@ namespace ExchangeRate.Services
     }
     public class Scraper : IScraper
     {
-        private ExchangeContext _exchangeContext;
+        private ExchangeRateContext _exchangeRateContext;
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<Scraper> _log;
+        private readonly ISettings _settings;
 
-        public Scraper(IHttpClientFactory httpFactory, ILogger<Scraper> log, ExchangeContext exchangeContext)
+        public Scraper(IHttpClientFactory httpFactory, ILogger<Scraper> log, ExchangeRateContext exchangeRateContext, ISettings settings)
         {
             _httpFactory = httpFactory;
             _log = log;
-            _exchangeContext = exchangeContext;
-
+            _exchangeRateContext = exchangeRateContext;
+            _settings = settings;
         }
 
         public async Task<List<ExchangeRates>> GetExchnageRates()
         {
             var result = new List<ExchangeRates>();
 
-            string url = "https://www.absa.co.za/indices/exchange-rates/";
+            string url = _settings.AbsaExchnageRateUrl;
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -71,22 +73,30 @@ namespace ExchangeRate.Services
                     CurrencyCode = row[0],
                     Country = row[1],
                     Multiplier = row[2],
-                    BuyTransfers = double.Parse(row[3], CultureInfo.InvariantCulture),
-                    BuyCheques = double.Parse(row[4], CultureInfo.InvariantCulture),
-                    BuyNotes = double.Parse(row[5], CultureInfo.InvariantCulture),
-                    SellChecks = double.Parse(row[6], CultureInfo.InvariantCulture),
-                    SellNotes = double.Parse(row[7], CultureInfo.InvariantCulture),
-
+                    BuyTransfers = decimal.Parse(row[3], CultureInfo.InvariantCulture),
+                    BuyCheques = decimal.Parse(row[4], CultureInfo.InvariantCulture),
+                    BuyNotes = decimal.Parse(row[5], CultureInfo.InvariantCulture),
+                    SellCheques = decimal.Parse(row[6], CultureInfo.InvariantCulture),
+                    SellNotes = decimal.Parse(row[7], CultureInfo.InvariantCulture),
+                    DateCreated = DateTime.Now
                 }).ToList();
 
-                _exchangeContext
+
+                _exchangeRateContext
                     .Set<ExchangeRates>()
                     .AddRange(result);
 
-                _exchangeContext.SaveChanges();
+                _exchangeRateContext
+                    .SaveChanges();
             }
 
-            return result;
+
+
+            return result.OrderBy(e => e.Id)
+                .ToList();
         }
+
+
+
     }
 }

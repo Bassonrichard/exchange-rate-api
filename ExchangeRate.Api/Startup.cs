@@ -8,6 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ExchangeRate.EF;
+using ExchangeRate.EF.Models;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using ExchangeRate.Common;
 
 [assembly: WebJobsStartup(typeof(Startup))]
 namespace ExchangeRate.Api
@@ -16,9 +20,20 @@ namespace ExchangeRate.Api
     {
         public void Configure(IWebJobsBuilder builder)
         {
+
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddEnvironmentVariables()
+                        .Build();
+
+            var connectionString = configuration.GetConnectionString("SqlServer");
+
+            builder.Services.AddTransient<ISettings, Settings>();
+            builder.Services.AddTransient<IExchangeRateConversion, ExchangeRateConversion>();
             builder.Services.AddTransient<IScraper, Scraper>();
             builder.Services.AddHttpClient<Scraper>();
-            builder.Services.AddDbContext<ExchangeContext>();
+            builder.Services.AddDbContext<ExchangeRateContext>
+                (options => options.UseSqlServer(connectionString));
         }
     }
 }

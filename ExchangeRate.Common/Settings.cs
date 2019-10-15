@@ -2,9 +2,13 @@
 
 namespace ExchangeRate.Common
 {
-    
-    public class Settings
-    {
+    public interface ISettings {
+        string AbsaExchnageRateUrl { get; }
+    }
 
+    
+    public class Settings : ISettings
+    {
+        public string AbsaExchnageRateUrl { get; } = Environment.GetEnvironmentVariable("AbsaExchnageRateUrl");
     }
 }
