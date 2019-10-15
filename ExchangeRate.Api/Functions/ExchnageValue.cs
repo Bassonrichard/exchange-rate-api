@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ExchangeRate.Services;
 using ExchangeRate.Api.Models;
+using ExchangeRate.Api.Models.Errors;
+using ExchangeRate.Services.Enums;
 
 namespace ExchangeRate.Api.Functions
 {
@@ -27,11 +29,14 @@ namespace ExchangeRate.Api.Functions
         [FunctionName("ExchnageValue")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "Post", Route = null)] HttpRequest req)
         {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            ExchangeValue data = JsonConvert.DeserializeObject<ExchangeValue>(requestBody);
             decimal amount = 0.0m;
+
+
             try
             {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                ExchangeValue data = JsonConvert.DeserializeObject<ExchangeValue>(requestBody);
+
                 switch (data.transactionTypes)
                 {
                     case Services.Enums.TransactionTypes.BuyTransfer:
@@ -49,13 +54,15 @@ namespace ExchangeRate.Api.Functions
                     case Services.Enums.TransactionTypes.SellNotes:
                         amount = _exchangeRateConversion.SellNotes(data.ammout, data.currencyCode);
                         break;
+                    default: 
+                        return NotFound(new NotFoundError($"There was no transaction type like '{data.transactionTypes}' found"));
                 }
                 return Ok(amount);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
-                throw;
+                return BadRequest(new BadRequestError(ex.Message));
             }
         }
     }

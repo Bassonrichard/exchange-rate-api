@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ExchangeRate.Services;
+using ExchangeRate.Api.Models.Errors;
 
 namespace ExchangeRate.Api
 {
@@ -26,9 +27,19 @@ namespace ExchangeRate.Api
         [FunctionName("ExchangeRates")]
         public  async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req)
         {
-            var data = await _scraper.GetExchnageRates();
+            try
+            {
+                var data = await _scraper.GetExchnageRates();
 
-            return Ok(data);
+                return Ok(data);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(new BadRequestError(ex.Message));
+            }
+          
         }
     }
 }

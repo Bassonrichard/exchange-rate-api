@@ -41,59 +41,69 @@ namespace ExchangeRate.Services
 
             var client = _httpFactory.CreateClient();
 
-            var response = await client.SendAsync(request);
-
-            //Check success response
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var html = await response.Content.ReadAsStringAsync();
+                var response = await client.SendAsync(request);
 
-                var htmlDoc = new HtmlDocument();
-                htmlDoc.LoadHtml(html);
-
-                //Get table element from html
-                var tableNode = htmlDoc.DocumentNode.SelectNodes("//table")
-                    .FirstOrDefault();
-
-                //Get table headers
-                var headerRow = tableNode.SelectNodes("//tr/th")
-                        .Select(node => string.Intern(node.InnerText))
-                        .ToArray();
-
-                //Get Table values
-                var data = tableNode.SelectNodes("//tbody/tr")
-                             .Select(rowNode => rowNode.SelectNodes("td")
-                                     .Select(cellNode => cellNode.InnerText)
-                                     .ToArray())
-                             .ToList();
-
-                //Parse data to object
-                result = data.Select(row => new ExchangeRates
+                //Check success response
+                if (response.IsSuccessStatusCode)
                 {
-                    CurrencyCode = row[0],
-                    Country = row[1],
-                    Multiplier = row[2],
-                    BuyTransfers = decimal.Parse(row[3], CultureInfo.InvariantCulture),
-                    BuyCheques = decimal.Parse(row[4], CultureInfo.InvariantCulture),
-                    BuyNotes = decimal.Parse(row[5], CultureInfo.InvariantCulture),
-                    SellCheques = decimal.Parse(row[6], CultureInfo.InvariantCulture),
-                    SellNotes = decimal.Parse(row[7], CultureInfo.InvariantCulture),
-                    DateCreated = DateTime.Now
-                }).ToList();
+                    var html = await response.Content.ReadAsStringAsync();
+
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(html);
+
+                    //Get table element from html
+                    var tableNode = htmlDoc.DocumentNode.SelectNodes("//table")
+                        .FirstOrDefault();
+
+                    //Get table headers
+                    var headerRow = tableNode.SelectNodes("//tr/th")
+                            .Select(node => string.Intern(node.InnerText))
+                            .ToArray();
+
+                    //Get Table values
+                    var data = tableNode.SelectNodes("//tbody/tr")
+                                 .Select(rowNode => rowNode.SelectNodes("td")
+                                         .Select(cellNode => cellNode.InnerText)
+                                         .ToArray())
+                                 .ToList();
+
+                    //Parse data to object
+                    result = data.Select(row => new ExchangeRates
+                    {
+                        CurrencyCode = row[0],
+                        Country = row[1],
+                        Multiplier = row[2],
+                        BuyTransfers = decimal.Parse(row[3], CultureInfo.InvariantCulture),
+                        BuyCheques = decimal.Parse(row[4], CultureInfo.InvariantCulture),
+                        BuyNotes = decimal.Parse(row[5], CultureInfo.InvariantCulture),
+                        SellCheques = decimal.Parse(row[6], CultureInfo.InvariantCulture),
+                        SellNotes = decimal.Parse(row[7], CultureInfo.InvariantCulture),
+                        DateCreated = DateTime.Now
+                    }).ToList();
 
 
-                _exchangeRateContext
-                    .Set<ExchangeRates>()
-                    .AddRange(result);
+                    _exchangeRateContext
+                        .Set<ExchangeRates>()
+                        .AddRange(result);
 
-                _exchangeRateContext
-                    .SaveChanges();
+                    _exchangeRateContext
+                        .SaveChanges();
+                }
+
+
+
+                return result.OrderBy(e => e.Id)
+                    .ToList();
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
 
-
-
-            return result.OrderBy(e => e.Id)
-                .ToList();
+        
         }
 
 
