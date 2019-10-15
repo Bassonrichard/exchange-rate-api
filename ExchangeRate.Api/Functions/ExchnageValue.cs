@@ -57,7 +57,15 @@ namespace ExchangeRate.Api.Functions
                     default: 
                         return NotFound(new NotFoundError($"There was no transaction type like '{data.transactionTypes}' found"));
                 }
-                return Ok(amount);
+
+                var result = new ExchangeRateValueResp()
+                {
+                    initialValue = data.ammout,
+                    convertedValue = amount,
+                    CurrencyCode = data.currencyCode.ToString()
+                };
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
