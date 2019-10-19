@@ -20,7 +20,11 @@ namespace ExchangeRate.Api.Functions
         }
 
         [FunctionName("ExchangeRatePoller")]
+<<<<<<< origin/master
         public async Task Run([TimerTrigger("0 1 * * * *")]TimerInfo myTimer)
+=======
+        public async Task Run([TimerTrigger("0 0 1 * * *")]TimerInfo myTimer)
+>>>>>>> local
         {
             try
             {
