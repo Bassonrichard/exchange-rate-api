@@ -40,19 +40,19 @@ namespace ExchangeRate.Api.Functions
                 switch (data.transactionTypes)
                 {
                     case Services.Enums.TransactionTypes.BuyTransfer:
-                        amount = _exchangeRateConversion.BuyTransfers(data.ammout, data.currencyCode);
+                        amount = _exchangeRateConversion.BuyTransfers(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.BuyCheques:
-                        amount = _exchangeRateConversion.BuyCheques(data.ammout, data.currencyCode);
+                        amount = _exchangeRateConversion.BuyCheques(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.SellCheques:
-                        amount = _exchangeRateConversion.SellCheques(data.ammout, data.currencyCode);
+                        amount = _exchangeRateConversion.SellCheques(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.BuyNotes:
-                        amount = _exchangeRateConversion.BuyNotes(data.ammout, data.currencyCode);
+                        amount = _exchangeRateConversion.BuyNotes(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.SellNotes:
-                        amount = _exchangeRateConversion.SellNotes(data.ammout, data.currencyCode);
+                        amount = _exchangeRateConversion.SellNotes(data.amount, data.currencyCode);
                         break;
                     default: 
                         return NotFound(new NotFoundError($"There was no transaction type like '{data.transactionTypes}' found"));
@@ -60,7 +60,7 @@ namespace ExchangeRate.Api.Functions
 
                 var result = new ExchangeRateValueResp()
                 {
-                    initialValue = data.ammout,
+                    initialValue = data.amount,
                     convertedValue = amount,
                     CurrencyCode = data.currencyCode.ToString()
                 };
