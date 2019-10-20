@@ -170,9 +170,9 @@ namespace ExchangeRate.Services
             switch (opperator)
             {
                 case "/":
-                    return (Math.Ceiling(amount / exchangerate) /100);
+                    return Math.Ceiling(amount / exchangerate);
                 case "*":
-                   return (Math.Ceiling(amount * exchangerate) /100);
+                   return Math.Ceiling(amount * exchangerate);
                 default: 
                     return 0.0m;
 
