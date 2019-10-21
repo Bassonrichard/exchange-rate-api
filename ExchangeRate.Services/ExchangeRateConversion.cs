@@ -10,11 +10,11 @@ namespace ExchangeRate.Services
 {
     public interface IExchangeRateConversion
     {
-        decimal BuyTransfers(decimal amount, CurrencyCodes currencyCode);
-        decimal BuyCheques(decimal amount, CurrencyCodes currencyCode);
-        decimal BuyNotes(decimal amount, CurrencyCodes currencyCode);
-        decimal SellCheques(decimal amount, CurrencyCodes currencyCode);
-        decimal SellNotes(decimal amount, CurrencyCodes currencyCode);
+        double BuyTransfers(double amount, CurrencyCodes currencyCode);
+        double BuyCheques(double amount, CurrencyCodes currencyCode);
+        double BuyNotes(double amount, CurrencyCodes currencyCode);
+        double SellCheques(double amount, CurrencyCodes currencyCode);
+        double SellNotes(double amount, CurrencyCodes currencyCode);
     }
 
     public class ExchangeRateConversion : IExchangeRateConversion
@@ -27,17 +27,17 @@ namespace ExchangeRate.Services
             _log = log;
         }
 
-        public decimal BuyTransfers(decimal amount, CurrencyCodes currencyCode)
+        public double BuyTransfers(double amount, CurrencyCodes currencyCode)
         {
             try
             {
                 var exchangerate = _exchangeRateContext
-             .Set<ExchangeRates>()
-             .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyTransfers, x.Multiplier })
-             .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-             .OrderByDescending(e => e.Key.DateCreated.Date)
-             .Select( e => new { e.Key.BuyTransfers, e.Key.Multiplier })
-             .First();
+                    .Set<ExchangeRates>()
+                    .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyTransfers, x.Multiplier })
+                    .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
+                    .OrderByDescending(e => e.Key.DateCreated.Date)
+                    .Select(e => new { e.Key.BuyTransfers, e.Key.Multiplier })
+                    .First();
 
                 if (exchangerate == null)
                 {
@@ -45,26 +45,27 @@ namespace ExchangeRate.Services
                     throw new ArgumentException("Could not get the exchangerate for this currency");
                 }
 
-                return convert(exchangerate.Multiplier, amount, (decimal)exchangerate.BuyTransfers);
+                return convert(exchangerate.Multiplier, amount, Convert.ToDouble(exchangerate.BuyTransfers));
             }
-            catch
+            catch (Exception ex)
             {
+                _log.LogError(ex.Message, ex);
                 throw;
             }
 
         }
 
-        public decimal BuyCheques(decimal amount, CurrencyCodes currencyCode)
+        public double BuyCheques(double amount, CurrencyCodes currencyCode)
         {
             try
             {
                 var exchangerate = _exchangeRateContext
-                 .Set<ExchangeRates>()
-                 .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyCheques, x.Multiplier })
-                 .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                 .OrderByDescending(e => e.Key.DateCreated.Date)
-                 .Select(e => new { e.Key.BuyCheques, e.Key.Multiplier })
-                 .First();
+                    .Set<ExchangeRates>()
+                    .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyCheques, x.Multiplier })
+                    .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
+                    .OrderByDescending(e => e.Key.DateCreated.Date)
+                    .Select(e => new { e.Key.BuyCheques, e.Key.Multiplier })
+                    .First();
 
                 if (exchangerate == null)
                 {
@@ -72,26 +73,28 @@ namespace ExchangeRate.Services
                     throw new ArgumentException("Could not get the exchangerate for this currency");
                 }
 
-                return convert(exchangerate.Multiplier, amount, (decimal)exchangerate.BuyCheques);
+                return convert(exchangerate.Multiplier, amount, Convert.ToDouble(exchangerate.BuyCheques));
             }
-            catch
+            catch (Exception ex)
             {
+                _log.LogError(ex.Message, ex);
                 throw;
             }
 
+
         }
 
-        public decimal BuyNotes(decimal amount, CurrencyCodes currencyCode)
+        public double BuyNotes(double amount, CurrencyCodes currencyCode)
         {
             try
             {
                 var exchangerate = _exchangeRateContext
-                             .Set<ExchangeRates>()
-                             .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyNotes, x.Multiplier })
-                             .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                             .OrderByDescending(e => e.Key.DateCreated.Date)
-                             .Select(e => new { e.Key.BuyNotes, e.Key.Multiplier })
-                             .First();
+                       .Set<ExchangeRates>()
+                       .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyNotes, x.Multiplier })
+                       .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
+                       .OrderByDescending(e => e.Key.DateCreated.Date)
+                       .Select(e => new { e.Key.BuyNotes, e.Key.Multiplier })
+                       .First();
 
                 if (exchangerate == null)
                 {
@@ -99,27 +102,27 @@ namespace ExchangeRate.Services
                     throw new ArgumentException("Could not get the exchangerate for this currency");
                 }
 
-                return convert(exchangerate.Multiplier, amount, (decimal)exchangerate.BuyNotes);
+                return convert(exchangerate.Multiplier, amount, Convert.ToDouble(exchangerate.BuyNotes));
             }
-            catch
+            catch (Exception ex)
             {
+                _log.LogError(ex.Message, ex);
                 throw;
             }
 
         }
 
-        public decimal SellCheques(decimal amount, CurrencyCodes currencyCode)
+        public double SellCheques(double amount, CurrencyCodes currencyCode)
         {
             try
             {
-
                 var exchangerate = _exchangeRateContext
-                .Set<ExchangeRates>()
-                .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.SellCheques, x.Multiplier })
-                .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                .OrderByDescending(e => e.Key.DateCreated.Date)
-                .Select(e => new { e.Key.SellCheques, e.Key.Multiplier })
-                .First();
+                    .Set<ExchangeRates>()
+                    .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.SellCheques, x.Multiplier })
+                    .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
+                    .OrderByDescending(e => e.Key.DateCreated.Date)
+                    .Select(e => new { e.Key.SellCheques, e.Key.Multiplier })
+                    .First();
 
                 if (exchangerate == null)
                 {
@@ -127,16 +130,18 @@ namespace ExchangeRate.Services
                     throw new ArgumentException("Could not get the exchangerate for this currency");
                 }
 
-                return convert(exchangerate.Multiplier, amount, (decimal)exchangerate.SellCheques);
+                return convert(exchangerate.Multiplier, amount, Convert.ToDouble(exchangerate.SellCheques));
             }
-            catch
+            catch(Exception ex)
             {
+                _log.LogError(ex.Message, ex);
                 throw;
             }
 
+
         }
 
-        public decimal SellNotes(decimal amount, CurrencyCodes currencyCode)
+        public double SellNotes(double amount, CurrencyCodes currencyCode)
         {
             try
             {
@@ -154,29 +159,35 @@ namespace ExchangeRate.Services
                     throw new ArgumentException("Could not get the exchangerate for this currency");
                 }
 
-                return convert(exchangerate.Multiplier, amount, (decimal)exchangerate.SellNotes);
+                return convert(exchangerate.Multiplier, amount, Convert.ToDouble(exchangerate.SellNotes));
             }
-            catch
+            catch(Exception ex)
             {
+                _log.LogError(ex.Message, ex);
                 throw;
             }
 
         }
 
-
-        private decimal convert(string opperator,decimal amount, decimal exchangerate)
+        private double convert(string opperator, double amount, double exchangerate)
         {
 
             switch (opperator)
             {
                 case "/":
-                    return Math.Ceiling(amount / exchangerate);
+                    return RoundUp((amount / exchangerate), 2);
                 case "*":
-                   return Math.Ceiling(amount * exchangerate);
-                default: 
-                    return 0.0m;
+                   return RoundUp((amount * exchangerate), 2);
+                default:
+                    return 0.00;
 
             }
+        }
+
+        public double RoundUp(double input, int places)
+        {
+            double multiplier = Math.Pow(10, Convert.ToDouble(places));
+            return Math.Ceiling(input * multiplier) / multiplier;
         }
 
 

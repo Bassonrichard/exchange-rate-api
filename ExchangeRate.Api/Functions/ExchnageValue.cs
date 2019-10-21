@@ -29,8 +29,7 @@ namespace ExchangeRate.Api.Functions
         [FunctionName("ExchnageValue")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "Post", Route = null)] HttpRequest req)
         {
-            decimal amount = 0.0m;
-
+            double amount = 0.00;
 
             try
             {

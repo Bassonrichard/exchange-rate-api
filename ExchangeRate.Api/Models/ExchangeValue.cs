@@ -7,7 +7,7 @@ namespace ExchangeRate.Api.Models
 {
     public class ExchangeValue
     {
-        public decimal amount { get; set; }
+        public double amount { get; set; }
         public CurrencyCodes currencyCode { get; set; }
         public TransactionTypes transactionTypes { get; set; }
 
