@@ -186,8 +186,7 @@ namespace ExchangeRate.Services
 
         public double RoundUp(double input, int places)
         {
-            double multiplier = Math.Pow(10, Convert.ToDouble(places));
-            return Math.Ceiling(input * multiplier) / multiplier;
+            return Math.Round(input, places, MidpointRounding.AwayFromZero);
         }
 
 
