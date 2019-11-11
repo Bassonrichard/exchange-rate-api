@@ -16,7 +16,7 @@ namespace ExchangeRate.Api.Functions
     public class CurrencyCodes: ControllerBase
     {
         [FunctionName("CurrencyCodes")]
-        public async Task<IActionResult> Run( [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        public IActionResult Run( [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
 
             var result = new List<Lookup>();

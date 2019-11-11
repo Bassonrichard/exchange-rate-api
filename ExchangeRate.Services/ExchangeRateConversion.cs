@@ -1,43 +1,41 @@
-﻿using ExchangeRate.EF.Models;
-using ExchangeRate.Services.Enums;
+﻿using ExchangeRate.Services.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ExchangeRate.Services
 {
     public interface IExchangeRateConversion
     {
-        double BuyTransfers(double amount, CurrencyCodes currencyCode);
-        double BuyCheques(double amount, CurrencyCodes currencyCode);
-        double BuyNotes(double amount, CurrencyCodes currencyCode);
-        double SellCheques(double amount, CurrencyCodes currencyCode);
-        double SellNotes(double amount, CurrencyCodes currencyCode);
+        Task<double> BuyTransfers(double amount, CurrencyCodes currencyCode);
+        Task<double> BuyCheques(double amount, CurrencyCodes currencyCode);
+        Task<double> BuyNotes(double amount, CurrencyCodes currencyCode);
+        Task<double> SellCheques(double amount, CurrencyCodes currencyCode);
+        Task<double> SellNotes(double amount, CurrencyCodes currencyCode);
     }
 
     public class ExchangeRateConversion : IExchangeRateConversion
     {
-        private ExchangeRateContext _exchangeRateContext;
         private readonly ILogger<ExchangeRateConversion> _log;
-        public ExchangeRateConversion(ExchangeRateContext exchangeRateContext, ILogger<ExchangeRateConversion> log)
+        private readonly IAzureTableStorage _azureTableStorage;
+        public ExchangeRateConversion(ILogger<ExchangeRateConversion> log, IAzureTableStorage azureTableStorage)
         {
-            _exchangeRateContext = exchangeRateContext;
             _log = log;
+            _azureTableStorage = azureTableStorage;
         }
 
-        public double BuyTransfers(double amount, CurrencyCodes currencyCode)
+        public async Task<double> BuyTransfers(double amount, CurrencyCodes currencyCode)
         {
             try
             {
-                var exchangerate = _exchangeRateContext
-                    .Set<ExchangeRates>()
-                    .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyTransfers, x.Multiplier })
-                    .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                    .OrderByDescending(e => e.Key.DateCreated.Date)
-                    .Select(e => new { e.Key.BuyTransfers, e.Key.Multiplier })
-                    .First();
+                string partition = currencyCode.ToString();
+                string row = DateTime.Now.ToString("yyyy-MM-dd");
+
+                var exchange = await _azureTableStorage.RetrieveExchangeRateUsingPointQueryAsync(partition,row);
+                var exchangerate = new { Multiplier = exchange.Multiplier, BuyTransfers = exchange.BuyTransfers};
 
                 if (exchangerate == null)
                 {
@@ -55,18 +53,15 @@ namespace ExchangeRate.Services
 
         }
 
-        public double BuyCheques(double amount, CurrencyCodes currencyCode)
+        public async Task<double> BuyCheques(double amount, CurrencyCodes currencyCode)
         {
             try
             {
-                var exchangerate = _exchangeRateContext
-                    .Set<ExchangeRates>()
-                    .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyCheques, x.Multiplier })
-                    .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                    .OrderByDescending(e => e.Key.DateCreated.Date)
-                    .Select(e => new { e.Key.BuyCheques, e.Key.Multiplier })
-                    .First();
+                string partition = currencyCode.ToString();
+                string row = DateTime.Now.ToString("yyyy-MM-dd");
 
+                var exchange = await _azureTableStorage.RetrieveExchangeRateUsingPointQueryAsync(partition, row);
+                var exchangerate = new { Multiplier = exchange.Multiplier, BuyCheques = exchange.BuyCheques };
                 if (exchangerate == null)
                 {
                     _log.LogError("Unable to get latest exchangerate for: {0} ", currencyCode.ToString());
@@ -84,18 +79,15 @@ namespace ExchangeRate.Services
 
         }
 
-        public double BuyNotes(double amount, CurrencyCodes currencyCode)
+        public async Task<double> BuyNotes(double amount, CurrencyCodes currencyCode)
         {
             try
             {
-                var exchangerate = _exchangeRateContext
-                       .Set<ExchangeRates>()
-                       .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.BuyNotes, x.Multiplier })
-                       .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                       .OrderByDescending(e => e.Key.DateCreated.Date)
-                       .Select(e => new { e.Key.BuyNotes, e.Key.Multiplier })
-                       .First();
+                string partition = currencyCode.ToString();
+                string row = DateTime.Now.ToString("yyyy-MM-dd");
 
+                var exchange = await _azureTableStorage.RetrieveExchangeRateUsingPointQueryAsync(partition, row);
+                var exchangerate = new { Multiplier = exchange.Multiplier, BuyNotes = exchange.BuyNotes };
                 if (exchangerate == null)
                 {
                     _log.LogError("Unable to get latest exchangerate for: {0} ", currencyCode.ToString());
@@ -112,18 +104,15 @@ namespace ExchangeRate.Services
 
         }
 
-        public double SellCheques(double amount, CurrencyCodes currencyCode)
+        public async Task<double> SellCheques(double amount, CurrencyCodes currencyCode)
         {
             try
             {
-                var exchangerate = _exchangeRateContext
-                    .Set<ExchangeRates>()
-                    .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.SellCheques, x.Multiplier })
-                    .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                    .OrderByDescending(e => e.Key.DateCreated.Date)
-                    .Select(e => new { e.Key.SellCheques, e.Key.Multiplier })
-                    .First();
+                string partition = currencyCode.ToString();
+                string row = DateTime.Now.ToString("yyyy-MM-dd");
 
+                var exchange = await _azureTableStorage.RetrieveExchangeRateUsingPointQueryAsync(partition, row);
+                var exchangerate = new { Multiplier = exchange.Multiplier, SellCheques = exchange.SellCheques };
                 if (exchangerate == null)
                 {
                     _log.LogError("Unable to get latest exchangerate for: {0} ", currencyCode.ToString());
@@ -141,18 +130,15 @@ namespace ExchangeRate.Services
 
         }
 
-        public double SellNotes(double amount, CurrencyCodes currencyCode)
+        public async Task<double> SellNotes(double amount, CurrencyCodes currencyCode)
         {
             try
             {
-                var exchangerate = _exchangeRateContext
-                  .Set<ExchangeRates>()
-                  .GroupBy(x => new { x.CurrencyCode, x.DateCreated, x.SellNotes, x.Multiplier })
-                  .Where(e => e.Key.CurrencyCode == currencyCode.ToString())
-                  .OrderByDescending(e => e.Key.DateCreated.Date)
-                  .Select(e => new { e.Key.SellNotes, e.Key.Multiplier })
-                  .FirstOrDefault();
+                string partition = currencyCode.ToString();
+                string row = DateTime.Now.ToString("yyyy-MM-dd");
 
+                var exchange = await _azureTableStorage.RetrieveExchangeRateUsingPointQueryAsync(partition, row);
+                var exchangerate = new { Multiplier = exchange.Multiplier, SellNotes = exchange.SellNotes};
                 if (exchangerate == null)
                 {
                     _log.LogError("Unable to get latest exchangerate for: {0} ", currencyCode.ToString());
@@ -169,7 +155,7 @@ namespace ExchangeRate.Services
 
         }
 
-        private double convert(string opperator, double amount, double exchangerate)
+        private  double convert(string opperator, double amount, double exchangerate)
         {
 
             switch (opperator)

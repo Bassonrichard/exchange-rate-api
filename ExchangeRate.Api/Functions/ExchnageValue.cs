@@ -19,9 +19,9 @@ namespace ExchangeRate.Api.Functions
 
         private readonly IExchangeRateConversion _exchangeRateConversion;
 
-        private readonly ILogger<ExchangeRates> _logger;
+        private readonly ILogger<ExchnageValue> _logger;
 
-        public ExchnageValue(IExchangeRateConversion exchangeRateConversion, ILogger<ExchangeRates> logger)
+        public ExchnageValue(IExchangeRateConversion exchangeRateConversion, ILogger<ExchnageValue> logger)
         {
             _exchangeRateConversion = exchangeRateConversion;
             _logger = logger;
@@ -39,19 +39,19 @@ namespace ExchangeRate.Api.Functions
                 switch (data.transactionTypes)
                 {
                     case Services.Enums.TransactionTypes.BuyTransfer:
-                        amount = _exchangeRateConversion.BuyTransfers(data.amount, data.currencyCode);
+                        amount = await _exchangeRateConversion.BuyTransfers(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.BuyCheques:
-                        amount = _exchangeRateConversion.BuyCheques(data.amount, data.currencyCode);
+                        amount = await _exchangeRateConversion.BuyCheques(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.SellCheques:
-                        amount = _exchangeRateConversion.SellCheques(data.amount, data.currencyCode);
+                        amount = await _exchangeRateConversion.SellCheques(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.BuyNotes:
-                        amount = _exchangeRateConversion.BuyNotes(data.amount, data.currencyCode);
+                        amount = await _exchangeRateConversion.BuyNotes(data.amount, data.currencyCode);
                         break;
                     case Services.Enums.TransactionTypes.SellNotes:
-                        amount = _exchangeRateConversion.SellNotes(data.amount, data.currencyCode);
+                        amount = await _exchangeRateConversion.SellNotes(data.amount, data.currencyCode);
                         break;
                     default: 
                         return NotFound(new NotFoundError($"There was no transaction type like '{data.transactionTypes}' found"));

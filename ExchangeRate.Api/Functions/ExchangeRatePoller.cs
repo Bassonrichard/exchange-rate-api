@@ -12,8 +12,8 @@ namespace ExchangeRate.Api.Functions
 
         private readonly IScraper _scraper;
 
-        private readonly ILogger<ExchangeRates> _logger;
-        public ExchangeRatePoller(IScraper scraper, ILogger<ExchangeRates> logger)
+        private readonly ILogger<ExchangeRatePoller> _logger;
+        public ExchangeRatePoller(IScraper scraper, ILogger<ExchangeRatePoller> logger)
         {
             _scraper = scraper;
             _logger = logger;

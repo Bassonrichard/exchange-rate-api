@@ -1,6 +1,5 @@
 ﻿using ExchangeRate.Common;
-using ExchangeRate.EF;
-using ExchangeRate.EF.Models;
+using ExchangeRate.Services.Models;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,26 +13,26 @@ namespace ExchangeRate.Services
 {
     public interface IScraper
     {
-        Task<List<ExchangeRates>> GetExchnageRates();
+        Task<List<ExchangeRateModel>> GetExchnageRates();
     }
     public class Scraper : IScraper
     {
-        private ExchangeRateContext _exchangeRateContext;
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<Scraper> _log;
         private readonly ISettings _settings;
+        private readonly IAzureTableStorage _azureTableStorage;
 
-        public Scraper(IHttpClientFactory httpFactory, ILogger<Scraper> log, ExchangeRateContext exchangeRateContext, ISettings settings)
+        public Scraper(IHttpClientFactory httpFactory, ILogger<Scraper> log, ISettings settings, IAzureTableStorage azureTableStorage)
         {
             _httpFactory = httpFactory;
             _log = log;
-            _exchangeRateContext = exchangeRateContext;
             _settings = settings;
+            _azureTableStorage = azureTableStorage;
         }
 
-        public async Task<List<ExchangeRates>> GetExchnageRates()
+        public async Task<List<ExchangeRateModel>> GetExchnageRates()
         {
-            var result = new List<ExchangeRates>();
+            var result = new List<ExchangeRateModel>();
 
             string url = _settings.AbsaExchnageRateUrl;
 
@@ -70,32 +69,24 @@ namespace ExchangeRate.Services
                                  .ToList();
 
                     //Parse data to object
-                    result = data.Select(row => new ExchangeRates
+                    result = data.Select(row => new ExchangeRateModel(row[0],DateTime.Now.ToString("yyyy-MM-dd"))
                     {
-                        CurrencyCode = row[0],
                         Country = row[1],
                         Multiplier = row[2],
-                        BuyTransfers = decimal.Parse(row[3], CultureInfo.InvariantCulture),
-                        BuyCheques = decimal.Parse(row[4], CultureInfo.InvariantCulture),
-                        BuyNotes = decimal.Parse(row[5], CultureInfo.InvariantCulture),
-                        SellCheques = decimal.Parse(row[6], CultureInfo.InvariantCulture),
-                        SellNotes = decimal.Parse(row[7], CultureInfo.InvariantCulture),
-                        DateCreated = DateTime.Now
+                        BuyTransfers = double.Parse(row[3], CultureInfo.InvariantCulture),
+                        BuyCheques = double.Parse(row[4], CultureInfo.InvariantCulture),
+                        BuyNotes = double.Parse(row[5], CultureInfo.InvariantCulture),
+                        SellCheques = double.Parse(row[6], CultureInfo.InvariantCulture),
+                        SellNotes = double.Parse(row[7], CultureInfo.InvariantCulture)
                     }).ToList();
-
-
-                    _exchangeRateContext
-                        .Set<ExchangeRates>()
-                        .AddRange(result);
-
-                    _exchangeRateContext
-                        .SaveChanges();
                 }
 
+                foreach (var exchange in result)
+                {
+                    await _azureTableStorage.InsertOrMergeExchangeRateAsync(exchange);
+                }
 
-
-                return result.OrderBy(e => e.Id)
-                    .ToList();
+                return result.ToList();
             }
             catch (Exception)
             {

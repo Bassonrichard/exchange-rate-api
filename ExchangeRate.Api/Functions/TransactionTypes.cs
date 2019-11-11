@@ -16,7 +16,7 @@ namespace ExchangeRate.Api.Functions
     public class TransactionTypes: ControllerBase
     {
         [FunctionName("TransactionTypes")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,ILogger log)
+        public  IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,ILogger log)
         {
             var result = new List<Lookup>();
 
