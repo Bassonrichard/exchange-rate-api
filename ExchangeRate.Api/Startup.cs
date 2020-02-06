@@ -1,14 +1,10 @@
 ﻿using ExchangeRate.Api;
+using ExchangeRate.Common;
 using ExchangeRate.Services;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using ExchangeRate.Common;
+using Microsoft.Azure.WebJobs.ServiceBus;
 
 [assembly: WebJobsStartup(typeof(Startup))]
 namespace ExchangeRate.Api
@@ -21,7 +17,7 @@ namespace ExchangeRate.Api
             builder.Services.AddTransient<ISettings, Settings>();
             builder.Services.AddTransient<IExchangeRateConversion, ExchangeRateConversion>();
             builder.Services.AddTransient<IScraper, Scraper>();
-
+            builder.Services.AddTransient<IServiceBus, ServiceBus>();
 
             builder.Services.AddHttpClient<Scraper>();
         }
