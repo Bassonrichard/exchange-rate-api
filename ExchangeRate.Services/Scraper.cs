@@ -85,13 +85,13 @@ namespace ExchangeRate.Services
 
                 foreach (var exchange in result)
                 {
-                    //await _serviceBus.WriteToQueue(exchange);
+                    await _serviceBus.WriteToQueue(exchange);
                     await _azureTableStorage.InsertOrMergeExchangeRateAsync(exchange);
                 }
 
                 return result.ToList();
             }
-            catch (Exception)
+            catch
             {
                 throw;
             }
