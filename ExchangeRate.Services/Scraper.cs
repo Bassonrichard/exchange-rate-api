@@ -21,13 +21,14 @@ namespace ExchangeRate.Services
         private readonly ILogger<Scraper> _log;
         private readonly ISettings _settings;
         private readonly IAzureTableStorage _azureTableStorage;
-
-        public Scraper(IHttpClientFactory httpFactory, ILogger<Scraper> log, ISettings settings, IAzureTableStorage azureTableStorage)
+        private readonly IServiceBus _serviceBus;
+        public Scraper(IHttpClientFactory httpFactory, ILogger<Scraper> log, ISettings settings, IAzureTableStorage azureTableStorage, IServiceBus serviceBus)
         {
             _httpFactory = httpFactory;
             _log = log;
             _settings = settings;
             _azureTableStorage = azureTableStorage;
+            _serviceBus = serviceBus;
         }
 
         public async Task<List<ExchangeRateModel>> GetExchnageRates()
@@ -81,23 +82,19 @@ namespace ExchangeRate.Services
                     }).ToList();
                 }
 
+
                 foreach (var exchange in result)
                 {
+                    await _serviceBus.WriteToQueue(exchange);
                     await _azureTableStorage.InsertOrMergeExchangeRateAsync(exchange);
                 }
 
                 return result.ToList();
             }
-            catch (Exception)
+            catch
             {
-
                 throw;
             }
-
-        
         }
-
-
-
     }
 }
